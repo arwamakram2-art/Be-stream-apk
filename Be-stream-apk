@@ -1,0 +1,174 @@
+www/index.html
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap: content: blob: http: https:; media-src * blob: http: https:;">
+  <title>BE STREAM 4K Player</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; user-select: none; }
+    body { background: radial-gradient(circle at top right, #1e1b4b, #090a0f 70%); color: #fff; min-height: 100vh; overflow-x: hidden; }
+    header { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; background: rgba(9, 10, 15, 0.85); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo-box { width: 42px; height: 42px; border-radius: 10px; background: linear-gradient(135deg, #6366f1, #06b6d4); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 20px; box-shadow: 0 0 15px rgba(99, 102, 241, 0.6); }
+    .brand-title { font-size: 22px; font-weight: 900; letter-spacing: 1px; background: linear-gradient(90deg, #fff, #38bdf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .status-badge { background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+    .hero { margin: 20px 25px; padding: 28px; border-radius: 20px; background: linear-gradient(120deg, rgba(79, 70, 229, 0.35), rgba(6, 182, 212, 0.15)), #0f172a; border: 1px solid rgba(99, 102, 241, 0.3); display: flex; justify-content: space-between; align-items: center; }
+    .hero h1 { font-size: 28px; margin-bottom: 6px; }
+    .hero p { color: #94a3b8; font-size: 14px; }
+    .main-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; padding: 0 25px; margin-bottom: 20px; }
+    .card { padding: 25px 20px; border-radius: 18px; cursor: pointer; transition: 0.25s; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+    .card:active, .card:hover { transform: scale(1.03); border-color: #38bdf8; }
+    .live-card { background: linear-gradient(145deg, #1e1b4b, #312e81); }
+    .vod-card { background: linear-gradient(145deg, #0f172a, #1e3a8a); }
+    .series-card { background: linear-gradient(145deg, #18181b, #3f3f46); }
+    .card h2 { font-size: 20px; margin-top: 10px; }
+    .card span { font-size: 12px; color: #cbd5e1; }
+    .content-area { padding: 0 25px 30px; }
+    .channels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 15px; }
+    .ch-item { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px; text-align: center; cursor: pointer; }
+    .ch-item:active { background: #4f46e5; }
+    .ch-item img { width: 55px; height: 55px; object-fit: contain; border-radius: 8px; background: #090a0f; padding: 4px; margin-bottom: 8px; }
+    .ch-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #playerModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 999; flex-direction: column; }
+    .player-top { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; background: #0f172a; }
+    .close-btn { background: #ef4444; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    video { width: 100%; height: calc(100vh - 60px); background: #000; }
+    .settings-bar { margin: 0 25px 20px; padding: 15px; background: rgba(15, 23, 42, 0.8); border-radius: 12px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .settings-bar input { flex: 1; min-width: 140px; padding: 10px; border-radius: 8px; border: 1px solid #334155; background: #090a0f; color: #fff; }
+    .btn-save { background: #06b6d4; color: #000; font-weight: 800; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="logo-box">BE</div>
+      <div>
+        <div class="brand-title">BE STREAM</div>
+        <div style="font-size:11px; color:#94a3b8;">PREMIUM 4K GLOBAL</div>
+      </div>
+    </div>
+    <div id="statusBadge" class="status-badge">متصل بالسيرفر ●</div>
+  </header>
+
+  <div class="hero">
+    <div>
+      <h1>BE STREAM 4K ULTRA HD</h1>
+      <p>مشغل القنوات والأفلام والمسلسلات المباشر - تقنية Anti-Freeze</p>
+    </div>
+  </div>
+
+  <div class="settings-bar">
+    <input type="text" id="hostInput" value="http://smart-d24k.live:80" placeholder="Host URL">
+    <input type="text" id="userInput" value="8civnfq0ur" placeholder="Username">
+    <input type="text" id="passInput" value="tqbo9no0h3" placeholder="Password">
+    <button class="btn-save" onclick="loadStreams('get_live_streams')">تحديث واتصال</button>
+  </div>
+
+  <div class="main-grid">
+    <div class="card live-card" onclick="loadStreams('get_live_streams')">
+      <div style="font-size:32px;">📺</div>
+      <h2>البث المباشر</h2>
+      <span>LIVE TV</span>
+    </div>
+    <div class="card vod-card" onclick="loadStreams('get_vod_streams')">
+      <div style="font-size:32px;">🎬</div>
+      <h2>الأفلام</h2>
+      <span>MOVIES (VOD)</span>
+    </div>
+    <div class="card series-card" onclick="loadStreams('get_series')">
+      <div style="font-size:32px;">🍿</div>
+      <h2>المسلسلات</h2>
+      <span>SERIES</span>
+    </div>
+  </div>
+
+  <div class="content-area">
+    <h3 id="sectionTitle">القنوات المتاحة:</h3>
+    <div id="channelsList" class="channels-grid"></div>
+  </div>
+
+  <div id="playerModal">
+    <div class="player-top">
+      <span id="playingTitle" style="font-weight:700;">جاري التشغيل...</span>
+      <button class="close-btn" onclick="closePlayer()">إغلاق ✕</button>
+    </div>
+    <video id="videoPlayer" controls autoplay playsinline></video>
+  </div>
+
+  <script>
+    let hls = null;
+
+    async function loadStreams(action) {
+      const host = document.getElementById('hostInput').value.trim().replace(/\/$/, '');
+      const user = document.getElementById('userInput').value.trim();
+      const pass = document.getElementById('passInput').value.trim();
+      const list = document.getElementById('channelsList');
+      list.innerHTML = '<p style="color:#38bdf8;">جاري سحب القائمة من السيرفر...</p>';
+
+      try {
+        const url = `${host}/player_api.php?username=${user}&password=${pass}&action=${action}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const items = Array.isArray(data) ? data.slice(0, 60) : [];
+
+        if (items.length === 0) {
+          list.innerHTML = '<p style="color:#f87171;">لم يتم العثور على قنوات أو أن الحساب منتهي الصلاحية.</p>';
+          return;
+        }
+
+        list.innerHTML = '';
+        items.forEach(item => {
+          const id = item.stream_id || item.series_id;
+          const name = item.name || item.title || 'Channel';
+          const icon = item.stream_icon || item.cover || 'https://via.placeholder.com/80x80/1e1b4b/38bdf8?text=BE';
+          const isVod = action === 'get_vod_streams';
+          const ext = item.container_extension || 'mp4';
+          const streamUrl = isVod
+            ? `${host}/movie/${user}/${pass}/${id}.${ext}`
+            : `${host}/live/${user}/${pass}/${id}.m3u8`;
+
+          const div = document.createElement('div');
+          div.className = 'ch-item';
+          div.onclick = () => playStream(name, streamUrl);
+          div.innerHTML = `<img src="${icon}" onerror="this.src='https://via.placeholder.com/80x80/1e1b4b/38bdf8?text=BE'"><div class="ch-name">${name}</div>`;
+          list.appendChild(div);
+        });
+      } catch (e) {
+        list.innerHTML = '<p style="color:#fbbf24;">تنبيه: يعمل الاتصال المباشر بالسيرفر فور تثبيت ملف الـ APK على جهازك.</p>';
+      }
+    }
+
+    function playStream(title, url) {
+      document.getElementById('playerModal').style.display = 'flex';
+      document.getElementById('playingTitle').innerText = title;
+      const video = document.getElementById('videoPlayer');
+
+      if (Hls.isSupported() && url.endsWith('.m3u8')) {
+        if (hls) hls.destroy();
+        hls = new Hls();
+        hls.loadSource(url);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+      } else {
+        video.src = url;
+        video.play();
+      }
+    }
+
+    function closePlayer() {
+      const video = document.getElementById('videoPlayer');
+      video.pause();
+      video.src = '';
+      if (hls) hls.destroy();
+      document.getElementById('playerModal').style.display = 'none';
+    }
+
+    window.onload = () => loadStreams('get_live_streams');
+  </script>
+</body>
+</html>

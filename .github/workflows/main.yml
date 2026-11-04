@@ -27,21 +27,17 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Install Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: '8.7'
-
     - name: Build Cordova Android APK
       run: |
-        npm install -g cordova
-        cordova create app com.bestream.player "BE STREAM 4K"
+        npm install -g cordova --force
+        cordova telemetry off
+        cordova create app com.bestream.player "BE STREAM 4K" --no-telemetry
         if [ -d "www" ]; then cp -rf www/* app/www/; fi
         if [ -f "index.html" ]; then cp -f index.html app/www/index.html; fi
         if [ -f "config.xml" ]; then cp -f config.xml app/config.xml; fi
         cd app
-        cordova platform add android@13.0.0
-        cordova build android --debug
+        cordova platform add android@13.0.0 --no-telemetry
+        cordova build android --debug --no-telemetry
 
     - name: Upload BE STREAM APK
       uses: actions/upload-artifact@v4
